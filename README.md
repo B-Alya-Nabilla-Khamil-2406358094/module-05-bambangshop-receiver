@@ -86,4 +86,38 @@ This is the place for you to write reflections:
 
 #### Reflection Subscriber-1
 
+## 1. Mengapa menggunakan `RwLock<>` dan bukan `Mutex<>`?
+
+Dalam implementasi ini, saya menggunakan `RwLock<>` untuk menyinkronkan akses terhadap `Vec` yang berisi daftar notifikasi.
+
+Alasan utama pemilihan `RwLock<>` dibandingkan `Mutex<>` adalah karena perbedaan cara keduanya menangani akses thread:
+
+- `RwLock<>` (Read-Write Lock) memungkinkan **banyak thread melakukan pembacaan (read) secara bersamaan**, namun hanya mengizinkan **satu thread untuk menulis (write)** pada satu waktu.
+- `Mutex<>` hanya mengizinkan **satu thread mengakses data pada satu waktu**, baik untuk operasi baca maupun tulis.
+
+Dalam konteks aplikasi ini, operasi membaca (seperti menampilkan daftar notifikasi melalui request GET) terjadi jauh lebih sering dibandingkan operasi menulis (menambahkan notifikasi baru).
+
+Dengan menggunakan `RwLock<>`, multiple request pembacaan dapat diproses secara paralel tanpa harus saling menunggu. Hal ini meningkatkan performa aplikasi secara signifikan.
+
+Sebaliknya, jika menggunakan `Mutex<>`, setiap operasi baca tetap harus dilakukan secara bergantian, meskipun tidak ada proses penulisan yang sedang berlangsung. Hal ini dapat menyebabkan bottleneck dan menurunkan efisiensi sistem.
+
+---
+
+## 2. Mengapa Rust tidak mengizinkan mutasi langsung pada variabel `static` seperti Java?
+
+Rust tidak mengizinkan mutasi langsung pada variabel `static` karena bahasa ini menerapkan prinsip **memory safety** yang ketat tanpa menggunakan garbage collector.
+
+Variabel `static` bersifat global dan dapat diakses oleh banyak thread secara bersamaan. Jika mutasi diperbolehkan tanpa mekanisme pengamanan, maka berpotensi terjadi **data race**, yaitu kondisi di mana beberapa thread mengakses dan memodifikasi data yang sama secara bersamaan tanpa sinkronisasi.
+
+Data race dapat menyebabkan **undefined behavior**, yang sangat berbahaya karena hasil eksekusi program menjadi tidak dapat diprediksi.
+
+Untuk mencegah hal tersebut, Rust mewajibkan penggunaan mekanisme sinkronisasi eksplisit seperti:
+- `Mutex<>`
+- `RwLock<>`
+- atau struktur data thread-safe lainnya
+
+Selain itu, penggunaan `lazy_static` memungkinkan saya untuk mendefinisikan variabel `static` yang kompleks dengan inisialisasi yang dilakukan saat pertama kali digunakan. Meskipun demikian, Rust tetap mengharuskan data tersebut dibungkus dalam mekanisme sinkronisasi agar tetap aman digunakan dalam konteks multi-threading.
+
+Dengan pendekatan ini, Rust memastikan bahwa akses terhadap data global tetap aman, terkontrol, dan bebas dari data race.
+
 #### Reflection Subscriber-2
