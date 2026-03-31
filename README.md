@@ -77,7 +77,7 @@ You can install Postman via this website: https://www.postman.com/downloads/
     -   [x] Commit: `Implement receive function in Notification controller.`
     -   [x] Commit: `Implement list_messages function in Notification service.`
     -   [x] Commit: `Implement list function in Notification controller.`
-    -   [ ] Write answers of your learning module's "Reflection Subscriber-2" questions in this README.
+    -   [x] Write answers of your learning module's "Reflection Subscriber-2" questions in this README.
 
 ## Your Reflections
 This is the place for you to write reflections:
@@ -121,3 +121,59 @@ Selain itu, penggunaan `lazy_static` memungkinkan saya untuk mendefinisikan vari
 Dengan pendekatan ini, Rust memastikan bahwa akses terhadap data global tetap aman, terkontrol, dan bebas dari data race.
 
 #### Reflection Subscriber-2
+
+## 1. Eksplorasi di luar langkah tutorial (src/lib.rs)
+
+Ya, saya telah mengeksplorasi file `src/lib.rs` di luar langkah yang dijelaskan dalam tutorial.
+
+File ini berfungsi sebagai pusat definisi fungsi dan konstanta yang dapat digunakan di seluruh crate, seperti:
+- `APP_CONFIG`
+- `REQWEST_CLIENT`
+- `Result`
+- `compose_error_response`
+
+Dalam implementasinya, `src/lib.rs` berperan sebagai **core utilities** dari aplikasi. Saya juga mengamati bahwa konfigurasi aplikasi dimuat dari environment variable menggunakan `lazy_static`, sehingga hanya diinisialisasi sekali saat pertama kali diakses.
+
+Selain itu, HTTP client (`reqwest`) juga diinisialisasi satu kali sebagai **singleton**, sehingga dapat digunakan secara efisien oleh seluruh bagian aplikasi tanpa perlu membuat instance baru berulang kali.
+
+Pendekatan ini merupakan contoh penerapan **Singleton Pattern** yang membantu meningkatkan efisiensi dan konsistensi dalam pengelolaan resource.
+
+---
+
+## 2. Peran Observer Pattern dalam memudahkan penambahan subscriber baru
+
+Observer Pattern memudahkan penambahan subscriber baru karena tidak memerlukan perubahan pada sisi publisher (Main app).
+
+Untuk menambahkan subscriber baru, saya hanya perlu:
+1. Menjalankan instance baru dari Receiver app (dengan port dan nama yang berbeda).
+2. Melakukan subscribe ke tipe produk tertentu melalui endpoint yang tersedia.
+
+Setelah itu, Main app akan secara otomatis:
+- Menyimpan subscriber tersebut dalam daftar
+- Mengirimkan notifikasi setiap kali terjadi event yang relevan
+
+Namun, saya juga mengamati bahwa jika terdapat lebih dari satu instance Main app, maka akan muncul tantangan baru. Hal ini disebabkan karena setiap instance memiliki state `SUBSCRIBERS` yang disimpan secara in-memory dan tidak saling terhubung.
+
+Akibatnya:
+- Subscriber yang terdaftar di satu instance tidak akan dikenali oleh instance lain
+- Notifikasi tidak terkirim secara konsisten
+
+Untuk mengatasi hal ini, diperlukan mekanisme berbagi state, seperti menggunakan **database eksternal** atau sistem penyimpanan terpusat lainnya.
+
+---
+
+## 3. Penggunaan Tests dan dokumentasi di Postman
+
+Saya telah mengeksplorasi fitur **Tests** pada Postman untuk meningkatkan proses pengujian API.
+
+Postman menyediakan kemampuan untuk menambahkan script berbasis JavaScript yang dapat digunakan untuk:
+- Memvalidasi status code (misalnya memastikan response bernilai `200 OK`)
+- Memastikan field tertentu terdapat dalam response body
+- Melakukan pengecekan otomatis terhadap format data
+
+Dengan adanya fitur ini, proses testing menjadi lebih efisien karena tidak perlu lagi melakukan pengecekan secara manual setiap kali endpoint dipanggil.
+
+Dalam konteks proyek kelompok, penggunaan Postman Tests sangat membantu untuk:
+- Menjaga konsistensi API
+- Memastikan tidak terjadi regression setelah perubahan kode
+- Mempermudah kolaborasi antar anggota tim
