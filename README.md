@@ -70,7 +70,7 @@ You can install Postman via this website: https://www.postman.com/downloads/
 -   **STAGE 3: Implement services and controllers**
     -   [x] Commit: `Create Notification service struct skeleton.`
     -   [x] Commit: `Implement subscribe function in Notification service.`
-    -   [ ] Commit: `Implement subscribe function in Notification controller.`
+    -   [x] Commit: `Implement subscribe function in Notification controller.`
     -   [ ] Commit: `Implement unsubscribe function in Notification service.`
     -   [ ] Commit: `Implement unsubscribe function in Notification controller.`
     -   [ ] Commit: `Implement receive_notification function in Notification service.`
